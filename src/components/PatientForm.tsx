@@ -1,17 +1,44 @@
 
 import { useForm } from "react-hook-form"
 import ErrorForm from "./ErrorForm"
-import { drafyPaTient } from "../types/typeS"
+import { drafyPaTient } from "../types/types"
+import { toast } from "react-toastify"
+import { usePatienteStore } from "../store/store"
+import { useEffect } from "react"
 
 export default function PatientForm() {
-    const { register, handleSubmit, formState: { errors } } = useForm<drafyPaTient>()
+    const { addPatient, activeId, patients, updatePatient } = usePatienteStore()
+    const { register, setValue, handleSubmit, formState: { errors }, reset } = useForm<drafyPaTient>()
 
-    const registerPtient = (data: drafyPaTient) => {
+    useEffect(() => {
+        if (activeId) {
+            const activePatient = patients.filter(eachPatient => eachPatient.id === activeId)[0]
+            setValue('name', activePatient.name)
+            setValue('email', activePatient.email)
+            setValue('caretaker', activePatient.caretaker)
+            setValue('date', activePatient.date)
+            setValue('symptoms', activePatient.symptoms)
 
+        }
+    }, [activeId])
+
+
+    const registerPatient = (data: drafyPaTient) => {
+        if (activeId) {
+            updatePatient(data)
+            toast.warning('se edito el paciente exitosamente')
+
+        } else {
+            addPatient(data)
+            toast.success('se añadio el paciente exitosamente')
+        }
+        reset()
     }
+
+
     return (
         <div className="md:w-1/2 lg:w-2/5 mx-5">
-            <h2 className="font-black text-3xl text-center">Seguimiento Pacientes</h2>
+            <h2 className="font-black text-3xl text-center">Seguimiento Pacientes </h2>
 
             <p className="text-lg mt-5 text-center mb-10">
                 Añade Pacientes y {''}
@@ -21,7 +48,7 @@ export default function PatientForm() {
             <form
                 className="bg-white shadow-md rounded-lg py-10 px-5 mb-10"
                 noValidate
-                onSubmit={handleSubmit(registerPtient)}
+                onSubmit={handleSubmit(registerPatient)}
             >
                 <div className="mb-5">
                     <label htmlFor="name" className="text-sm uppercase font-bold">
@@ -38,8 +65,7 @@ export default function PatientForm() {
                         })}
 
                     />
-                    /*para javascript necesitamos ponerlo como  error={errors.name?.message?.toString()}
-                    */
+
                     <ErrorForm
                         error={errors.name?.message}
                     />
@@ -64,6 +90,7 @@ export default function PatientForm() {
                     <ErrorForm
                         error={errors.caretaker?.message}
                     />
+
                 </div>
 
                 <div className="mb-5">
